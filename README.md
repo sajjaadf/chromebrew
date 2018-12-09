@@ -1,3 +1,4 @@
+<center>
 ![](https://sajjaadf.github.io/chromebrew-Dev/images/brew.png) <br>
 Chromebrew
 ==========
