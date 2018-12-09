@@ -1,5 +1,5 @@
 ![](https://sajjaadf.github.io/chromebrew-Dev/images/brew.png) <br>
-chromebrew
+Chromebrew
 ==========
 
 Package manager for Chrome OS
