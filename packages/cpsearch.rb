@@ -10,27 +10,38 @@ class Cpsearch < Package
   depends_on 'gtkdialog'
 
   def self.build
-    system "cat << 'EOF' > cpsearch
+    system "cat << 'EOF' > pkgsearch
 #!/bin/bash
 IFS=\$'\\n'
-pkgsearch () {
-  [ -f /tmp/packages.txt ] || crew search > /tmp/allpkgs.txt
-  grep -i \"\$KEYWORD\" /tmp/allpkgs.txt > /tmp/pkgs.txt
-  [ -s /tmp/pkgs.txt ] && cat /tmp/pkgs.txt
-}
-export -f pkgsearch
+! test \$1 && exit 1
+[[ \"\$1\" == \"-u\" ]] && rm -f /tmp/allpkgs.txt && exit 0
+[ ! -f /tmp/allpkgs.txt ] && crew search > /tmp/allpkgs.txt
+grep -i \"\$1\" /tmp/allpkgs.txt > /tmp/pkgs.txt
+if [ -s /tmp/pkgs.txt ]; then
+  cat /tmp/pkgs.txt | cut -d':' -f1 > /tmp/pkgnames.txt
+  if [ -s /tmp/pkgnames.txt ]; then
+    clear && cat /tmp/pkgnames.txt
+  fi
+fi
+EOF"
+system "cat << 'EOF' > cpsearch
+#!/bin/bash
 export MAIN_DIALOG='
-<window title=\"Chromebrew Package Search\" width-request=\"250\" height-request=\"90\">
+<window title=\"Package Search\" width-request=\"280\" height-request=\"100\">
 <vbox homogeneous=\"true\">
   <hbox space-fill=\"true\">
-    <text><label>Keyword: </label></text>
+    <text><label>Keyword(s):</label></text>
     <entry activates_default=\"true\"><variable>KEYWORD</variable></entry>
   </hbox>
-  <hseparator width-request=\"240\"></hseparator>
+  <hseparator width-request=\"270\"></hseparator>
   <hbox homogeneous=\"true\">
     <button use-underline=\"true\" can-default=\"true\" has-default=\"true\">
       <label>_Search</label>
-      <action>pkgsearch</action>
+      <action>pkgsearch $KEYWORD</action>
+    </button>
+    <button use-underline=\"true\">
+      <label>_Update</label>
+      <action>pkgsearch -n</action>
     </button>
     <button cancel></button>
   </hbox>
@@ -42,6 +53,7 @@ EOF"
   end
 
   def self.install
+    system "install -Dm755 pkgsearch #{CREW_DEST_PREFIX}/bin/pkgsearch"
     system "install -Dm755 cpsearch #{CREW_DEST_PREFIX}/bin/cpsearch"
   end
 end
