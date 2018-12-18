@@ -20,9 +20,9 @@ pkgsearch () {
 }
 export -f pkgsearch
 export MAIN_DIALOG='
-<window title=\"Chromebrew Package Search\" width-request=\"250\" height-request=\"100\">
+<window title=\"Chromebrew Package Search\" width-request=\"250\" height-request=\"90\">
 <vbox homogeneous=\"true\">
-  <hbox homogeneous=\"true\">
+  <hbox space-fill=\"true\">
     <text><label>Keyword: </label></text>
     <entry activates_default=\"true\"><variable>KEYWORD</variable></entry>
   </hbox>
