@@ -12,20 +12,41 @@ class Cpsearch < Package
   def self.build
     system "cat << 'EOF' > pkgsearch
 #!/bin/bash
+TMP=#{CREW_PREFIX}/tmp
+ALL=\$TMP/all.txt
+PKGS=\$TMP/pkgs.txt
+NAMES=\$TMP/names.txt
+CBS=\$TMP/checkboxes.txt
 IFS=\$'\\n'
 ! test \$1 && exit 1
-[[ \"\$1\" == \"-u\" ]] && rm -f /tmp/allpkgs.txt && exit 0
-[ ! -f /tmp/allpkgs.txt ] && crew search > /tmp/allpkgs.txt
-grep -i \"\$1\" /tmp/allpkgs.txt > /tmp/pkgs.txt
-if [ -s /tmp/pkgs.txt ]; then
-  cat /tmp/pkgs.txt | cut -d':' -f1 > /tmp/pkgnames.txt
-  if [ -s /tmp/pkgnames.txt ]; then
-    clear && cat /tmp/pkgnames.txt
+[[ \"\$1\" = \"-u\" ]] && rm -f \$ALL && exit 0
+[ ! -f \$ALL ] && crew search \> \$ALL
+grep -i \"\$1\" \$ALL \> \$PKGS
+# remove special character color codes
+sed -i \"s,\\x1B\\[[0-9;]*[a-zA-Z],,g\" \$PKGS
+if [ -s \$PKGS ]; then
+  cat \$PKGS | cut -d':' -f1 \> \$NAMES
+  if [ -s \$NAMES ]; then
+    rm -f \$CBS
+    for p in \$(cat \$NAMES); do
+      i=\$(echo \$p | cut -d' ' -f1)
+      [[ \"\$i\" = \"(i)\" ]] && p=\$(echo \$p | cut -d' ' -f2)
+      echo false \> \$TMP/\$p
+      [[ \"\$i\" = \"(i)\" ]] && echo true \> \$TMP/\$p
+      echo \"<checkbox>
+  <label>\$p</label>
+  <variable>\$p</variable>
+  <input>cat \$TMP/\$p</input>
+  <action>refresh:\$p</action>
+</checkbox>\" \>\> \$CBS
+    done
   fi
 fi
 EOF"
 system "cat << 'EOF' > cpsearch
 #!/bin/bash
+TMP=#{CREW_PREFIX}/tmp
+CBS=\$TMP/checkboxes.txt
 export MAIN_DIALOG='
 <window title=\"Package Search\" width-request=\"280\" height-request=\"100\">
 <vbox homogeneous=\"true\">
@@ -41,7 +62,7 @@ export MAIN_DIALOG='
     </button>
     <button use-underline=\"true\">
       <label>_Update</label>
-      <action>pkgsearch -n</action>
+      <action>pkgsearch -u</action>
     </button>
     <button cancel></button>
   </hbox>
