@@ -47,18 +47,22 @@ system "cat << 'EOF' > cpsearch
 #!/bin/bash
 TMP=#{CREW_PREFIX}/tmp
 CBS=\$TMP/checkboxes.txt
-export MAIN_DIALOG='
-<window title=\"Package Search\" width-request=\"280\" height-request=\"100\">
+HEIGHT=100
+[ -s \$CBS ] && HEIGHT=\$((\$HEIGHT + \$(wc -l \$CBS | cut -d' ' -f1)))
+export main_dialog='
+<window title=\"Package Search\" width-request=\"280\" height-request=\"\${HEIGHT}\">
 <vbox homogeneous=\"true\">
   <hbox space-fill=\"true\">
     <text><label>Keyword(s):</label></text>
     <entry activates_default=\"true\"><variable>KEYWORD</variable></entry>
-  </hbox>
+  </hbox>'
+  [ -s \$CBS ] \&\& main_dialog=\${main_dialog}\$(cat \$CBS)
+  main_dialog=\${main_dialog}'
   <hseparator width-request=\"270\"></hseparator>
   <hbox homogeneous=\"true\">
     <button use-underline=\"true\" can-default=\"true\" has-default=\"true\">
       <label>_Search</label>
-      <action>pkgsearch $KEYWORD</action>
+      <action>pkgsearch \$KEYWORD</action>
     </button>
     <button use-underline=\"true\">
       <label>_Update</label>
@@ -69,6 +73,7 @@ export MAIN_DIALOG='
 </vbox>
 </window>
 '
+export MAIN_DIALOG=\"\${main_dialog}\"
 gtkdialog -p MAIN_DIALOG --center
 EOF"
   end
