@@ -2,7 +2,7 @@ require 'package'
 
 class Cpsearch < Package
   description 'Chromebrew Package Search'
-  homepage 'http://skycocker.github.io/chromebrew/'
+  homepage 'https://skycocker.github.io/chromebrew/'
   version '1.0'
   source_url 'file:///dev/null'
   source_sha256 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
